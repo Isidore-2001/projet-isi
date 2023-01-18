@@ -39,39 +39,41 @@ function create_groups() {
 
 
 # pas accès à dir_b
+# pas accès à dir_b
 function create_directory() {
     mkdir -p /home/dir_a
     mkdir -p /home/dir_b
     mkdir -p /home/dir_c
-   # assignons les propriétaires et les groupes appropriés
-   for i in {1..3}
-   do
-   	sudo chown -R lambda_a$i:groupe_a dir_a
-	sudo chown -R lambda_b$i:groupe_b dir_b
-	sudo chown -R lambda_a$i:groupe_a dir_c
-	sudo chown -R lambda_b$i:groupe_b dir_c
-   done
 
-   sudo chmod 750 dir_a 
-   sudo chmod 750 dir_b
-   sudo chmod 755 dir_c
+    # droits sur le dossier partagé 
+    chgrp -R groupe_c /home/dir_c
+    chown admin /home/dir_a
+    chown admin /home/dir_b
+    # droits du groupe_c 
+    chgrp -R groupe_a /home/dir_a
+    chgrp -R groupe_b /home/dir_b
+
+    chmod +t /home/dir_a && chmod +t /home/dir_b
+    chmod -R 770 /home/dir_a && chmod -R 770 /home/dir_b
+    chmod -R 770 /home/dir_c
 }
 
+
 function script_user_lambda_a(){
-   for i in {1..3}
-   do
-	   sudo chown lambda_a$i:lambda_a$i dir_a/*
-   done
+   # for i in {1..3}
+   # do
+   #     sudo chown lambda_a$i:lambda_a$i dir_a/*
+   # done
 
    sudo chmod 755 dir_a/*
    sudo chmod 555 dir_c/*
 }
 
-function script_user_lambda_a(){
-   for i in {1..3}
-   do
-	    chown lambda_b$i:lambda_b$i dir_b/*
-   done
+function script_user_lambda_b(){
+   # for i in {1..3}
+   # do
+   #      sudo chown lambda_b$i:lambda_b$i dir_b/*
+   # done
 
    sudo chmod 755 dir_a/*
    sudo chmod 555 dir_c/*
@@ -119,6 +121,9 @@ function main() {
     create_users_b
     create_admin
     create_directory
+    script_user_lambda_a
+    script_user_lambda_b
+    script_user_admin
 }
 
 
