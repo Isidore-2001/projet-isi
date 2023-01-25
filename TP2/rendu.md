@@ -132,7 +132,7 @@ faille. Expliquez la demarche que vous avez suivi.
 Implémentation
 ==============
 
-Pour eviter les failles **xss** il echapper les données lors de l'insertions et lors de l'affichage. 
+Pour eviter les failles **xss** il faut échapper les données lors de l'insertions et lors de l'affichage. 
 Lors de l'affichage car c'est en ce moment que les données sont exécutés par le navigateur et ainsi eviter que ces données soient transmises aux malveillants. 
 
 Pour l'insertion un code javascript peut eventuellement exécuter des codes malveillants nottament pour supprimer des données dans la BDD en réalisant des requêtes.
