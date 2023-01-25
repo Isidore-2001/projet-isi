@@ -31,7 +31,7 @@ Exemple d'insertion
 ===================
 
 ```sh 
-$ curl -X POST  -d "chaine=2 ; SELECT * from /submit=OK"  http://localhost:8080/
+$ curl -X POST  -d "chaine=2 ; SELECT * from &submit=OK"  http://localhost:8080/
 ```
 
 Insertion
