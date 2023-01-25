@@ -69,7 +69,7 @@ On voit avec la dernière ligne que la donnée a bien été inséré.
 
 ## Question 3
 
-* Votre commande curl qui va permettre de rajouter une entree en mettant un contenu arbutraire dans le champ 'who'
+* Votre commande curl qui va permettre de rajouter une entree en mettant un contenu arbitraire dans le champ 'who'
 
 ```sh 
 $ curl -X POST  -d "chaine=hack','192.152.145.18') #"  http://localhost:8080/
@@ -79,6 +79,7 @@ $ curl -X POST  -d "chaine=hack','192.152.145.18') #"  http://localhost:8080/
 Pour obtenir des informations sur une autre table on peut réaliser cette commande en la combinant avec une autre en utilisant **AND** puisque la première requête sera exécuté. Si on avait utilisé un **OR** cela ne fonctionneraît pas.
 
 ## Question 4
+
 Rendre un fichier server_correct.py avec la correction de la faille de
 sécurité. Expliquez comment vous avez corrigé la faille.
 
