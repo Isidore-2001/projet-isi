@@ -76,7 +76,8 @@ $ curl -X POST  -d "chaine=hack','192.152.145.18') #"  http://localhost:8080/
 ```
 
 * Expliquez comment obtenir des informations sur une autre table
-Pour obtenir des informations sur une autre table on peut réaliser cette commande en la combinant avec une autre en utilisant **AND** puisque la première requête sera exécuté. Si on avait utilisé un **OR** cela ne fonctionneraît pas.
+Pour obtenir des informations sur une autre table on peut réaliser cette commande en la combinant avec une autre en insérant un **;** 
+à la fin de la première requête pour ainsi éxécuter la seconde.
 
 ## Question 4
 
