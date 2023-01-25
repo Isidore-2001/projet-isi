@@ -109,8 +109,8 @@ Implémentation
 Explication
 ===========
 
-Pour le corriger on a utilisé une requête paramétré composé de deux chaînes de caractères. 
-Le premier spécifiant la colonne **post["chaine"]** et la colonne ****cherrypy.request.remote.ip**
+Pour la corriger on a utilisé une requête paramétré composé de deux chaînes de caractères. 
+Le premier spécifiant la colonne **post["chaine"]** et la colonne **cherrypy.request.remote.ip**
 
 ## Question 5
 
