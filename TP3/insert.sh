@@ -10,15 +10,18 @@ function insertCard {
     read name
     echo "Your card is $name"
 
-    if [ ! -d DISK ]
+    if [ ! -d RAMDISK ]
     then
-        mkdir DISK
+		echo "RAMDISK not found"
+		exit 1
     fi
-    if [ ! -f DISK/databases ]
+    if [ ! -f RAMDISK/ramdisk_key ]
     then
-        touch DISK/databases
+        echo "RAMDISK_KEY not found"
+		exit 1
     fi
-    echo $name':'$card >> DISK/databases
+	encryptedPassword=$(echo -n "$card" | openssl enc -aes-256-cbc -base64 -A -pass file:RAMDISK/ramdisk_key -nosalt)
+    echo $name':'$encryptedPassword >> DISK/databases
 }
 
 # insertion a card

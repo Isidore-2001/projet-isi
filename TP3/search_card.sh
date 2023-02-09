@@ -1,25 +1,5 @@
 #! /bin/bash 
 
-function searchCardWithNumber(){
-    # search a card with a number
-    # $1 : number of the card
-    # $2 : file where the card is stored
-    # return the name of the card
-    # return 1 if the card is not found
-    # return 2 if the file is not found
-    if [ ! -f DISK/databases ]
-    then
-        echo "Database not found"
-    fi
-    card=$(grep $1 DISK/databases)
-    if [[ -z $card ]]
-    then
-        echo "Card not found"
-        return 1
-    fi
-    echo $card
-}
-
 function searchCardWithName(){
     # search a card with a name
     # $1 : name of the card
@@ -27,16 +7,20 @@ function searchCardWithName(){
     # return the number of the card
     # return 1 if the card is not found
     # return 2 if the file is not found
-    if [ ! -f DISK/databases ]
+    if [ ! -f RAMDISK/master_key ]
     then
-        echo "Database not found"
+        echo "MASTER_KEY not found"
+		return 2
     fi
     card=$(grep $1 DISK/databases)
     if [ -z $card ]
     then
         return "The card is not found"
     fi
-    echo $card | cut -d':' -f2
+	decryptionPassword=$(cat RAMDISK/master_key)
+	encryptedPassword=$(echo $card | cut -d':' -f2)
+	decryptedPassword=$(echo "$encryptedPassword" | openssl enc -d -aes-256-cbc -base64 -A -pass "pass:$decryptionPassword" -nosalt)
+    echo "Your card is $decryptedPassword"
 }
 
 if [ $# -eq 1 ]
@@ -45,6 +29,6 @@ then
 fi
 if [ $# -eq 0 ]
 then
-    echo "Enter the number of the card"
+    echo "Usage: searchCard.sh <card name>"
     exit 1
 fi

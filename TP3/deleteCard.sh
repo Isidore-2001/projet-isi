@@ -6,12 +6,12 @@ function deleteCard {
     # $2 : file where the card is stored
     # return 1 if the card is not found
     # return 2 if the file is not found
-    if [ ! -f DISK/databases ]
+    if [ ! -f RAMDISK/master_key ]
     then
-        echo "Database not found"
+        echo "MasterKey not found"
         return 2
     fi
-    card=$(grep $1:$2 DISK/databases)
+    card=$(grep $1 DISK/databases)
     if [[ -z $card ]]
     then
         echo "Card not found"
@@ -21,32 +21,10 @@ function deleteCard {
     echo "************Card deleted*************"
 }
 
-function deleteCardWithName {
-    # delete a card with a name
-    # $1 : name of the card
-    # $2 : file where the card is stored
-    # return 1 if the card is not found
-    # return 2 if the file is not found
-    if [ ! -f DISK/databases ]
-    then
-        echo "Database not found"
-        return 2
-    fi
-    card=$(grep $1 DISK/databases)
-    if [ -z $card ]
-    then
-        echo "The card is not found"
-        return 1
-    fi
-    sed -i "/$1/d" DISK/databases
-}
+if [ $# -eq 1 ]
+then
+    deleteCard $1
+else 
+	echo "Usage: deleteCard.sh <card number>"
+fi
 
-if [ $# -eq 2 ]
-then
-    deleteCard $1 $2
-fi
-if [ $# -lt 2 ]
-then
-    echo "Enter the pair name number of the card"
-    exit 1
-fi
