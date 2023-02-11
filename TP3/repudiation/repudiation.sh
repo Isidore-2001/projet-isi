@@ -73,15 +73,15 @@ function initRepUSB2() {
 }
 
 function recreateKeyPass() {
-    repudition=$(zenity --list --width=500 --height=400 --text "Quelle personne voulez-vous repudier ?" --radiolist --column "Choix" --column "Personne" 1 "Responsable 1" 2 "Responsable 2" 3 "Representant 1" 4 "Representant 2")
-    if [ -z "$repudition" ]; then
-        echo "Choix : $repudition"
+    repudiation=$(zenity --list --width=500 --height=400 --text "Quelle personne voulez-vous repudier ?" --radiolist --column "Choix" --column "Personne" 1 "Responsable 1" 2 "Responsable 2" 3 "Representant 1" 4 "Representant 2")
+    if [ -z "$repudiation" ]; then
+        echo "Choix : $repudiation"
         exit 1
     else
-        case $repudition in 
+        case $repudiation in 
             "Responsable 1")
                 zenity --info --title="Repudiation" \
-                --text="Vous avez choisi de repudier $repudition." \
+                --text="Vous avez choisi de repudier $repudiation." \
                 --window-icon="icon.png" --width=500 --height=400 \
                 --ok-label="Continuer"
                 echo "Suppression du representant 1"
@@ -119,7 +119,7 @@ function recreateKeyPass() {
                 ;;
            "Responsable 2")
                 zenity --info --title="Repudiation" \
-                --text="Vous avez choisi de repudier $repudition." \
+                --text="Vous avez choisi de repudier $repudiation." \
                 --window-icon="icon.png" --width=500 --height=400 \
                 --ok-label="Continuer"
                echo "Suppression du representant 2"
@@ -158,7 +158,7 @@ function recreateKeyPass() {
 
             "Representant 1")
                 zenity --info --title="Repudiation" \
-                --text="Vous avez choisi de repudier $repudition." \
+                --text="Vous avez choisi de repudier $repudiation." \
                 --window-icon="icon.png" --width=500 --height=400 \
                 --ok-label="Continuer"
                 echo "Suppression du representant 1"
@@ -191,7 +191,7 @@ function recreateKeyPass() {
                 ;;
             "Representant 2")
                 zenity --info --title="Repudiation" \
-                --text="Vous avez choisi de repudier $repudition." \
+                --text="Vous avez choisi de repudier $repudiation." \
                 --window-icon="icon.png" --width=500 --height=400 \
                 --ok-label="Continuer"
                 echo "Suppression du representant 2"
@@ -227,7 +227,3 @@ function recreateKeyPass() {
 }
 
 recreateKeyPass
-
-
-
-

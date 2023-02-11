@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # deleted ramdisk
-sudo rm -rf RAMDISK
+sudo rm -rf RAMDISK/*
