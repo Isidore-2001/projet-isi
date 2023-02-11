@@ -47,10 +47,10 @@ function secondLoginJudgeReplace() {
 function generateMasterKey() {
 	# generate a master key with combination of USB1 and USB2 keys
     local firstKey=$1
-    local secondKey=$2
+    local secondKey="$2"
     echo "******************************Generating master key from USB1 and USB2******************************"
-	openssl enc -aes-256-cbc -in RAMDISK/master_key -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$(cat $firstKey)"
-	openssl enc -aes-256-cbc -in RAMDISK/master_key_tmp.crypt -out DISK/master_key.crypt -pbkdf2 -pass "pass:$(cat $secondKey)"
+	openssl enc -aes-256-cbc -in RAMDISK/master_key -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$firstKey"
+	openssl enc -aes-256-cbc -in RAMDISK/master_key_tmp.crypt -out DISK/master_key.crypt -pbkdf2 -pass "pass:$secondKey"
     echo "******************************Master key generated******************************"
 }
 
@@ -59,8 +59,8 @@ function initRepUSB1() {
     local decryptUSB1=$1
     echo "$decryptUSB1" > USBREPRESENTATION/USB1/key_rep
     echo "USB1 key decrypted"
-    # add Rep Tag to USBREPRESENTATION/USB1/key_rep
     echo "REP" >> USBREPRESENTATION/USB1/key_rep
+    cryptKey USBREPRESENTATION/USB1/key_rep USBREPRESENTATION/USB1/key.crypt
 }
 
 function initRepUSB2() {
@@ -69,50 +69,160 @@ function initRepUSB2() {
     echo $decryptUSB2 > USBREPRESENTATION/USB2/key_rep
     echo "USB2 key decrypted"
     echo "REP" >> USBREPRESENTATION/USB2/key_rep
+    cryptKey USBREPRESENTATION/USB2/key_rep USBREPRESENTATION/USB2/key.crypt
 }
 
 function recreateKeyPass() {
-    # delete a represent key
-    # ask what person want to repudiate
-    repudition=$(zenity --list --text "Quelle personne voulez-vous repudier ?" --radiolist --column "Choix" --column "Personne" 1 "Responsable 1" 2 "Responsable 2" 3 "Representant 1" 4 "Representant 2")
-    if [ ! -z "$repudition" ]; then
+    repudition=$(zenity --list --width=500 --height=400 --text "Quelle personne voulez-vous repudier ?" --radiolist --column "Choix" --column "Personne" 1 "Responsable 1" 2 "Responsable 2" 3 "Representant 1" 4 "Representant 2")
+    if [ -z "$repudition" ]; then
         echo "Choix : $repudition"
         exit 1
     else
-        # sed -i 's/ REP//g' USBREPRESENTATION/USB1/key_rep
-        # decryptage de l'ensemble de la master key
-        local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -a -in DISK/master_key.crypt -out RAMDISK/master_key_tmp.crypt -pass pass:$decryptUSB1)
-        local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -a -in RAMDISK/master_key_tmp.crypt -out RAMDISK/master_key -pass pass:$decryptUSB2)
-        rm RAMDISK/master_key_tmp.crypt
-        rm -rf DISK/master_key.crypt
-        # switch case pour savoir quel representant supprimer
         case $repudition in 
             "Responsable 1")
+                zenity --info --title="Repudiation" \
+                --text="Vous avez choisi de repudier $repudition." \
+                --window-icon="icon.png" --width=500 --height=400 \
+                --ok-label="Continuer"
+                echo "Suppression du representant 1"
+                echo "Mot de passe du second responsable 1 : "
                 decryptUSB2=`secondLoginJudge`
+                echo "Mot de passe du representant 1 : "
                 decryptUSBRepresentant=`loginJudgeReplace`
+                decryptUSBRepresentant=`echo "$decryptUSBRepresentant" | sed 's/ REP//g'`
+                echo "Mot de passe du representant 2 : "
                 decryptUSBRepresentant2=`secondLoginJudgeReplace`
+                decryptUSBRepresentant2=`echo "$decryptUSBRepresentant2" | sed 's/ REP//g'`
                 # check if the key is pass or not
-                if [ -z "$decryptUSB2" || -z "$decryptUSBRepresentant" || -z "$decryptUSBRepresentant2" ]; then
+                if [ -z "$decryptUSB2" ] || [ -z "$decryptUSBRepresentant" ] || [ -z "$decryptUSBRepresentant2" ]; then
                     echo "Erreur de mot de passe"
                     exit 1
                 fi
+
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in DISK/master_key.crypt -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSB2")
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in RAMDISK/master_key_tmp.crypt -out RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSBRepresentant")
+                rm -rf RAMDISK/master_key_tmp.crypt
+                rm -rf DISK/master_key.crypt
                 initUSB1
                 if [ -f "USB1/key" ]; then
                     echo "************************** Generate a new key **************************"
                     cryptKey "USB1/key" "USB1/key.crypt"
-                    # rm -rf USB1/key
-                    exit 1
                 fi
-                generateMasterKey "USB1/key" "USB2/key"
+                generateMasterKey $(cat USB1/key) $decryptUSB2
                 initRepUSB1 $(cat USB1/key)
                 rm -rf USB1/key
                 rm -rf USB2/key
-                rm -rf USBREPRESENTATION/USB1/key
-                rm -rf USBREPRESENTATION/USB2/key
+                rm -rf USBREPRESENTATION/USB1/key_rep
+                rm -rf USBREPRESENTATION/USB2/key_rep
+                rm -rf RAMDISK/*
+                echo "************************** Un nouveau representant **************************"
+                ;;
+           "Responsable 2")
+                zenity --info --title="Repudiation" \
+                --text="Vous avez choisi de repudier $repudition." \
+                --window-icon="icon.png" --width=500 --height=400 \
+                --ok-label="Continuer"
+               echo "Suppression du representant 2"
+               echo "Mot de passe du premier responsable : "
+               decryptUSB2=`loginJudge`
+               echo "Mot de passe du premier representant : "
+               decryptUSBRepresentant=`loginJudgeReplace`
+               decryptUSBRepresentant=`echo "$decryptUSBRepresentant" | sed 's/ REP//g'`
+               echo "Mot de passe du second representant : "
+               decryptUSBRepresentant2=`secondLoginJudgeReplace`
+               decryptUSBRepresentant2=`echo "$decryptUSBRepresentant2" | sed 's/ REP//g'`
+               # check if the key is pass or not
+               if [ -z "$decryptUSB2" ] || [ -z "$decryptUSBRepresentant" ] || [ -z "$decryptUSBRepresentant2" ]; then
+                   echo "Erreur de mot de passe"
+                   exit 1
+               fi
+
+               local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in DISK/master_key.crypt -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSBRepresentant2")
+               local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in RAMDISK/master_key_tmp.crypt -out RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSBRepresentant")
+               rm RAMDISK/master_key_tmp.crypt
+               rm -rf DISK/master_key.crypt
+               initUSB2 
+               if [ -f "USB2/key" ]; then
+                   echo "************************** Generate a new key **************************"
+                   cryptKey "USB2/key" "USB2/key.crypt"
+               fi
+               generateMasterKey $decryptUSBRepresentant $(cat USB2/key)
+               initRepUSB2 $(cat USB2/key)
+               rm -rf USB1/key
+               rm -rf USB2/key
+               rm -rf USBREPRESENTATION/USB1/key_rep
+               rm -rf USBREPRESENTATION/USB2/key_rep
+               rm -rf RAMDISK/*
+               echo "************************** Un nouveau responsable **************************"
+               ;;
+
+            "Representant 1")
+                zenity --info --title="Repudiation" \
+                --text="Vous avez choisi de repudier $repudition." \
+                --window-icon="icon.png" --width=500 --height=400 \
+                --ok-label="Continuer"
+                echo "Suppression du representant 1"
+                echo "Mot de passe du premier responsable : "
+                decryptUSB2=`loginJudge`
+                echo "Mot de passe du second responsable : "
+                decryptUSBRepresentant=`secondLoginJudge`
+                echo "Mot de passe du second representant : "
+                decryptUSBRepresentant2=`secondLoginJudgeReplace`
+                decryptUSBRepresentant2=`echo "$decryptUSBRepresentant2" | sed 's/ REP//g'`
+                # check if the key is pass or not
+                if [ -z "$decryptUSB2" ] || [ -z "$decryptUSBRepresentant" ] || [ -z "$decryptUSBRepresentant2" ]; then
+                    echo "Erreur de mot de passe"
+                    exit 1
+                fi
+
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in DISK/master_key.crypt -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSBRepresentant")
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in RAMDISK/master_key_tmp.crypt -out RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSB2")
+                rm RAMDISK/master_key_tmp.crypt
+                rm -rf DISK/master_key.crypt
+                echo "********************* Generate a new key *********************"
+                initRepUSB1 $decryptUSB2
+                echo "********************* Generated a new key *********************"
+                rm -rf USB1/key
+                rm -rf USB2/key
+                rm -rf USBREPRESENTATION/USB1/key_rep
+                rm -rf USBREPRESENTATION/USB2/key_rep
+                rm -rf RAMDISK/*
+                echo "************************** Un nouveau representant **************************"
+                ;;
+            "Representant 2")
+                zenity --info --title="Repudiation" \
+                --text="Vous avez choisi de repudier $repudition." \
+                --window-icon="icon.png" --width=500 --height=400 \
+                --ok-label="Continuer"
+                echo "Suppression du representant 2"
+                echo "Mot de passe du premier responsable : "
+                decryptUSB2=`loginJudge`
+                echo "Mot de passe du second responsable : "
+                decryptUSBRepresentant=`secondLoginJudge`
+                echo "Mot de passe du premier representant : "
+                decryptUSBRepresentant2=`loginJudgeReplace`
+                decryptUSBRepresentant2=`echo "$decryptUSBRepresentant2" | sed 's/ REP//g'`
+                # check if the key is pass or not
+                if [ -z "$decryptUSB2" ] || [ -z "$decryptUSBRepresentant" ] || [ -z "$decryptUSBRepresentant2" ]; then
+                    echo "Erreur de mot de passe"
+                    exit 1
+                fi
+
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in DISK/master_key.crypt -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSB2")
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in RAMDISK/master_key_tmp.crypt -out RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSBRepresentant")
+                rm RAMDISK/master_key_tmp.crypt
+                rm -rf DISK/master_key.crypt
+                echo "********************* Generate a new key *********************"
+                initRepUSB2 $decryptUSB2
+                echo "********************* Generated a new key *********************"
+                rm -rf USB1/key
+                rm -rf USB2/key
+                rm -rf USBREPRESENTATION/USB1/key_rep
+                rm -rf USBREPRESENTATION/USB2/key_rep
+                rm -rf RAMDISK/*
+                echo "************************** Un nouveau representant **************************"
                 ;;
         esac
-        # generate a new key for the representant
-        
     fi
 }
 
