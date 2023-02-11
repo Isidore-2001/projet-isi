@@ -5,12 +5,13 @@
 decryptUSB1=""
 decryptUSB2=""
 
+DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 function initUSB1() {
-    dd if=/dev/urandom bs=1 count=32 count=19 |  hexdump -ve '1/1 "%02x"' > USB1/key 
+    dd if=/dev/urandom bs=19 count=1 |  hexdump -ve '1/1 "%02x"' > $DIRECTORY/../USB1/key 
 }
 
 function initUSB2() {
-    dd if=/dev/urandom bs=1 count=32 count=19 |  hexdump -ve '1/1 "%02x"' > USB2/key 
+    dd if=/dev/urandom bs=19 count=1 |  hexdump -ve '1/1 "%02x"' > $DIRECTORY/../USB2/key 
 }
 
 function cryptKey {
@@ -20,12 +21,12 @@ function cryptKey {
 }
 
 function loginJudge() {
-	decrptUSB1=$(openssl enc -aes-256-cbc -d -in USB1/key.crypt -A -pbkdf2)
+	decrptUSB1=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../USB1/key.crypt -A -pbkdf2)
 	echo $decrptUSB1
 }
 
 function secondLoginJudge() {
-	decrptUSB2=$(openssl enc -aes-256-cbc -d -in USB2/key.crypt -A -pbkdf2)
+	decrptUSB2=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../USB2/key.crypt -A -pbkdf2)
     echo $decrptUSB2
 }
 
@@ -34,13 +35,13 @@ function secondLoginJudge() {
 ##########################################################################
 
 function loginJudgeReplace() {
-    decrypUSBRepresentant=$(openssl enc -aes-256-cbc -d -in USBREPRESENTATION/USB1/key.crypt -A -pbkdf2)
+    decrypUSBRepresentant=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../USBREPRESENTATION/USB1/key.crypt -A -pbkdf2)
     echo $decrypUSBRepresentant
 }
 
 
 function secondLoginJudgeReplace() {
-    decrypUSBRepresentant2=$(openssl enc -aes-256-cbc -d -in USBREPRESENTATION/USB2/key.crypt -A -pbkdf2)
+    decrypUSBRepresentant2=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../USBREPRESENTATION/USB2/key.crypt -A -pbkdf2)
     echo $decrypUSBRepresentant2
 }
 
@@ -49,27 +50,27 @@ function generateMasterKey() {
     local firstKey=$1
     local secondKey="$2"
     echo "******************************Generating master key from USB1 and USB2******************************"
-	openssl enc -aes-256-cbc -in RAMDISK/master_key -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$firstKey"
-	openssl enc -aes-256-cbc -in RAMDISK/master_key_tmp.crypt -out DISK/master_key.crypt -pbkdf2 -pass "pass:$secondKey"
+	openssl enc -aes-256-cbc -in $DIRECTORY/../RAMDISK/master_key -out $DIRECTORY/../RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$firstKey"
+	openssl enc -aes-256-cbc -in $DIRECTORY/../RAMDISK/master_key_tmp.crypt -out $DIRECTORY/../DISK/master_key.crypt -pbkdf2 -pass "pass:$secondKey"
     echo "******************************Master key generated******************************"
 }
 
 function initRepUSB1() {
     echo "Decrypting USB1 key"
     local decryptUSB1=$1
-    echo "$decryptUSB1" > USBREPRESENTATION/USB1/key_rep
+    echo "$decryptUSB1" > $DIRECTORY/../USBREPRESENTATION/USB1/key_rep
     echo "USB1 key decrypted"
-    echo "REP" >> USBREPRESENTATION/USB1/key_rep
-    cryptKey USBREPRESENTATION/USB1/key_rep USBREPRESENTATION/USB1/key.crypt
+    echo "REP" >> $DIRECTORY/../USBREPRESENTATION/USB1/key_rep
+    cryptKey $DIRECTORY/../USBREPRESENTATION/USB1/key_rep $DIRECTORY/../USBREPRESENTATION/USB1/key.crypt
 }
 
 function initRepUSB2() {
     echo "Decrypting USB2 key"
     local decryptUSB2=$1
-    echo $decryptUSB2 > USBREPRESENTATION/USB2/key_rep
+    echo $decryptUSB2 > $DIRECTORY/../USBREPRESENTATION/USB2/key_rep
     echo "USB2 key decrypted"
-    echo "REP" >> USBREPRESENTATION/USB2/key_rep
-    cryptKey USBREPRESENTATION/USB2/key_rep USBREPRESENTATION/USB2/key.crypt
+    echo "REP" >> $DIRECTORY/../USBREPRESENTATION/USB2/key_rep
+    cryptKey $DIRECTORY/../USBREPRESENTATION/USB2/key_rep $DIRECTORY/../USBREPRESENTATION/USB2/key.crypt
 }
 
 function recreateKeyPass() {
@@ -99,22 +100,22 @@ function recreateKeyPass() {
                     exit 1
                 fi
 
-                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in DISK/master_key.crypt -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSB2")
-                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in RAMDISK/master_key_tmp.crypt -out RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSBRepresentant")
-                rm -rf RAMDISK/master_key_tmp.crypt
-                rm -rf DISK/master_key.crypt
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../DISK/master_key.crypt -out $DIRECTORY/../RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSB2")
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../RAMDISK/master_key_tmp.crypt -out $DIRECTORY/../RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSBRepresentant")
+                rm -rf $DIRECTORY/../RAMDISK/master_key_tmp.crypt
+                rm -rf $DIRECTORY/../DISK/master_key.crypt
                 initUSB1
                 if [ -f "USB1/key" ]; then
                     echo "************************** Generate a new key **************************"
-                    cryptKey "USB1/key" "USB1/key.crypt"
+                    cryptKey "$DIRECTORY/../USB1/key" "$DIRECTORY/../USB1/key.crypt"
                 fi
-                generateMasterKey $(cat USB1/key) $decryptUSB2
-                initRepUSB1 $(cat USB1/key)
-                rm -rf USB1/key
-                rm -rf USB2/key
-                rm -rf USBREPRESENTATION/USB1/key_rep
-                rm -rf USBREPRESENTATION/USB2/key_rep
-                rm -rf RAMDISK/*
+                generateMasterKey $(cat $DIRECTORY/../USB1/key) $decryptUSB2
+                initRepUSB1 $(cat $DIRECTORY/../USB1/key)
+                rm -rf $DIRECTORY/../USB1/key
+                rm -rf $DIRECTORY/../USB2/key
+                rm -rf $DIRECTORY/../USBREPRESENTATION/USB1/key_rep
+                rm -rf $DIRECTORY/../USBREPRESENTATION/USB2/key_rep
+                rm -rf $DIRECTORY/../RAMDISK/*
                 echo "************************** Un nouveau representant **************************"
                 ;;
            "Responsable 2")
@@ -137,8 +138,8 @@ function recreateKeyPass() {
                    exit 1
                fi
 
-               local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in DISK/master_key.crypt -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSBRepresentant2")
-               local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in RAMDISK/master_key_tmp.crypt -out RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSBRepresentant")
+               local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../DISK/master_key.crypt -out $DIRECTORY/../RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSBRepresentant2")
+               local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in RAMDISK/master_key_tmp.crypt -out $DIRECTORY/../RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSBRepresentant")
                rm RAMDISK/master_key_tmp.crypt
                rm -rf DISK/master_key.crypt
                initUSB2 
@@ -146,13 +147,13 @@ function recreateKeyPass() {
                    echo "************************** Generate a new key **************************"
                    cryptKey "USB2/key" "USB2/key.crypt"
                fi
-               generateMasterKey $decryptUSBRepresentant $(cat USB2/key)
-               initRepUSB2 $(cat USB2/key)
-               rm -rf USB1/key
-               rm -rf USB2/key
-               rm -rf USBREPRESENTATION/USB1/key_rep
-               rm -rf USBREPRESENTATION/USB2/key_rep
-               rm -rf RAMDISK/*
+               generateMasterKey $decryptUSBRepresentant $(cat $DIRECTORY/../USB2/key)
+               initRepUSB2 $(cat $DIRECTORY/../USB2/key)
+               rm -rf $DIRECTORY/../USB1/key
+               rm -rf $DIRECTORY/../USB2/key
+               rm -rf $DIRECTORY/../USBREPRESENTATION/USB1/key_rep
+               rm -rf $DIRECTORY/../USBREPRESENTATION/USB2/key_rep
+               rm -rf $DIRECTORY/../RAMDISK/*
                echo "************************** Un nouveau responsable **************************"
                ;;
 
@@ -175,18 +176,18 @@ function recreateKeyPass() {
                     exit 1
                 fi
 
-                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in DISK/master_key.crypt -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSBRepresentant")
-                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in RAMDISK/master_key_tmp.crypt -out RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSB2")
-                rm RAMDISK/master_key_tmp.crypt
-                rm -rf DISK/master_key.crypt
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../DISK/master_key.crypt -out $DIRECTORY/../RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSBRepresentant")
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../RAMDISK/master_key_tmp.crypt -out $DIRECTORY/../RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSB2")
+                rm $DIRECTORY/../RAMDISK/master_key_tmp.crypt
+                rm -rf $DIRECTORY/../DISK/master_key.crypt
                 echo "********************* Generate a new key *********************"
                 initRepUSB1 $decryptUSB2
                 echo "********************* Generated a new key *********************"
-                rm -rf USB1/key
-                rm -rf USB2/key
-                rm -rf USBREPRESENTATION/USB1/key_rep
-                rm -rf USBREPRESENTATION/USB2/key_rep
-                rm -rf RAMDISK/*
+                rm -rf $DIRECTORY/../USB1/key
+                rm -rf $DIRECTORY/../USB2/key
+                rm -rf $DIRECTORY/../USBREPRESENTATION/USB1/key_rep
+                rm -rf $DIRECTORY/../USBREPRESENTATION/USB2/key_rep
+                rm -rf $DIRECTORY/../RAMDISK/*
                 echo "************************** Un nouveau representant **************************"
                 ;;
             "Representant 2")
@@ -208,18 +209,18 @@ function recreateKeyPass() {
                     exit 1
                 fi
 
-                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in DISK/master_key.crypt -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSB2")
-                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in RAMDISK/master_key_tmp.crypt -out RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSBRepresentant")
-                rm RAMDISK/master_key_tmp.crypt
-                rm -rf DISK/master_key.crypt
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../DISK/master_key.crypt -out $DIRECTORY/../RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSB2")
+                local masterKeyDecrypted=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../RAMDISK/master_key_tmp.crypt -out $DIRECTORY/../RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSBRepresentant")
+                rm -rf $DIRECTORY/../RAMDISK/master_key_tmp.crypt
+                rm -rf $DIRECTORY/../DISK/master_key.crypt
                 echo "********************* Generate a new key *********************"
                 initRepUSB2 $decryptUSB2
                 echo "********************* Generated a new key *********************"
-                rm -rf USB1/key
-                rm -rf USB2/key
-                rm -rf USBREPRESENTATION/USB1/key_rep
-                rm -rf USBREPRESENTATION/USB2/key_rep
-                rm -rf RAMDISK/*
+                rm -rf $DIRECTORY/../USB1/key
+                rm -rf $DIRECTORY/../USB2/key
+                rm -rf $DIRECTORY/../USBREPRESENTATION/USB1/key_rep
+                rm -rf $DIRECTORY/../USBREPRESENTATION/USB2/key_rep
+                rm -rf $DIRECTORY/../RAMDISK/*
                 echo "************************** Un nouveau representant **************************"
                 ;;
         esac

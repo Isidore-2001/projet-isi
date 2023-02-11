@@ -4,15 +4,14 @@
 ##############
 decryptUSB1=""
 decryptUSB2=""
-
- 
+DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 function loginJudge() {
-	decrptUSB1=$(openssl enc -aes-256-cbc -d -in USB1/key.crypt -A -pbkdf2)
+	decrptUSB1=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../USB1/key.crypt -A -pbkdf2)
 	echo $decrptUSB1
 }
 
 function secondLoginJudge() {
-	decrptUSB2=$(openssl enc -aes-256-cbc -d -in USB2/key.crypt -A -pbkdf2)
+	decrptUSB2=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../USB2/key.crypt -A -pbkdf2)
     echo $decrptUSB2
 }
 
@@ -21,13 +20,13 @@ function secondLoginJudge() {
 ##########################################################################
 
 function loginJudgeReplace() {
-    decrypUSBRepresentant=$(openssl enc -aes-256-cbc -d -in USBREPRESENTATION/USB1/key.crypt -A -pbkdf2)
+    decrypUSBRepresentant=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../USBREPRESENTATION/USB1/key.crypt -A -pbkdf2)
     echo $decrypUSBRepresentant
 }
 
 
 function secondLoginJudgeReplace() {
-    decrypUSBRepresentant2=$(openssl enc -aes-256-cbc -d -in USBREPRESENTATION/USB2/key.crypt -A -pbkdf2)
+    decrypUSBRepresentant2=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../USBREPRESENTATION/USB2/key.crypt -A -pbkdf2)
     echo $decrypUSBRepresentant2
 }
 
@@ -41,20 +40,20 @@ function loginUSB1() {
     echo "2 - Remplaçant 1  (USBREPRESENTATION/USB1)"
     read -p "Votre choix : " choix
     USB_FILE=""
-    if [ $choix -eq 1 ]
+    if [ $choix -eq 1 ];
     then
-        USB_FILE="USB1/key.crypt"
-        if [ -f $USB_FILE ]
+        USB_FILE="$DIRECTORY/../USB1/key.crypt"
+        if [ -f $USB_FILE ];
         then
             decryptUSB1=`loginJudge`
             echo "Votre clé est : $decryptUSB1"
         else
             echo "Vous n'avez pas le bon fichier"
         fi
-    elif [ $choix -eq 2 ]
+    elif [ $choix -eq 2 ];
     then
-        USB_FILE="USBREPRESENTATION/USB1/key.crypt"
-        if [ -f $USB_FILE ]
+        USB_FILE="$DIRECTORY/../USBREPRESENTATION/USB1/key.crypt"
+        if [ -f $USB_FILE ];
         then
             decryptUSB1=`loginJudgeReplace`
             decryptUSB1=`echo "$decryptUSB1" | sed 's/ REP//g'`
@@ -73,19 +72,19 @@ function loginUSB2() {
     echo "2 - Remplaçant 2  (USBREPRESENTATION/USB2)"
     read -p "Votre choix : " choix
     USB_FILE=""
-    if [ $choix -eq 1 ]
+    if [ $choix -eq 1 ];
     then
-        USB_FILE="USB2/key.crypt"
-        if [ -f $USB_FILE ]
+        USB_FILE="$DIRECTORY/../USB2/key.crypt"
+        if [ -f $USB_FILE ];
         then
             decryptUSB2=`secondLoginJudge`
         else
             echo "Vous n'avez pas le bon fichier"
         fi
-    elif [ $choix -eq 2 ]
+    elif [ $choix -eq 2 ];
     then
-        USB_FILE="USBREPRESENTATION/USB2/key.crypt"
-        if [ -f $USB_FILE ]
+        USB_FILE="$DIRECTORY/../USBREPRESENTATION/USB2/key.crypt"
+        if [ -f $USB_FILE ];
         then
             decryptUSB2=`secondLoginJudgeReplace`
             decryptUSB2=`echo "$decryptUSB2" | sed 's/ REP//g'`
@@ -105,8 +104,8 @@ function loginUSB2() {
 function login() {
     loginUSB1
     loginUSB2
-    decryptedMasterKey=$(openssl enc -aes-256-cbc -d -in DISK/master_key.crypt -out RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSB2")
-    decryptedMasterKeyOut=$(openssl enc -aes-256-cbc -d -in RAMDISK/master_key_tmp.crypt -out RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSB1")
+    decryptedMasterKey=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../DISK/master_key.crypt -out $DIRECTORY/../RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSB2")
+    decryptedMasterKeyOut=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../RAMDISK/master_key_tmp.crypt -out $DIRECTORY/../RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSB1")
 }
 
 
@@ -117,7 +116,7 @@ function login() {
 function main() {
     login
     echo "********** Connexion en cours **********"
-    if [ -f RAMDISK/master_key ]
+    if [ -f $DIRECTORY/../RAMDISK/master_key ]
     then
         echo "Vous êtes connecté"
     else
