@@ -1,34 +1,30 @@
 #! /bin/bash 
 
-function searchCardWithName(){
-    # search a card with a name
-    # $1 : name of the card
-    # $2 : file where the card is stored
-    # return the number of the card
-    # return 1 if the card is not found
-    # return 2 if the file is not found
-    if [ ! -f RAMDISK/master_key ]
-    then
-        echo "MASTER_KEY not found"
-		return 2
+function searchCard {
+    echo "Enter the name of the card you're looking for: "
+    read search_name
+
+    if [ ! -d RAMDISK ]; then
+        echo "Error: RAMDISK directory not found."
+        exit 1
     fi
-    card=$(grep $1 DISK/databases)
-    if [ -z $card ]
-    then
-        return "The card is not found"
+
+    if [ ! -f RAMDISK/master_key ]; then
+        echo "Error: Logging in first is required."
+        exit 1
     fi
-	decryptionPassword=$(cat RAMDISK/master_key)
-	encryptedPassword=$(echo $card | cut -d':' -f2)
-	decryptedPassword=$(echo "$encryptedPassword" | openssl enc -d -aes-256-cbc -base64 -A -pass "pass:$decryptionPassword" -nosalt)
-    echo "Your card is $decryptedPassword"
+
+    line=$(grep "^$search_name:" DISK/databases)
+    if [ -n "$line" ]; then
+        encrypted_card=$(echo "$line" | cut -d ':' -f2)
+        decrypted_card=$(echo "$encrypted_card" | openssl enc -d -aes-256-cbc -base64 -pbkdf2 -pass file:RAMDISK/master_key -nosalt)
+        echo "Card number: $decrypted_card"
+        return 0
+    fi
+
+    echo "Card not found."
+    return 1
 }
 
-if [ $# -eq 1 ]
-then
-    searchCardWithName $1
-fi
-if [ $# -eq 0 ]
-then
-    echo "Usage: searchCard.sh <card name>"
-    exit 1
-fi
+# search for a card
+searchCard

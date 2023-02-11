@@ -19,5 +19,4 @@ function main() {
 	# $3: output file
 	encryptDatabase "RAMDISK/databases" "RAMDISK/databases_tmp.crypt" "USB1/key" 
 	encryptDatabase "RAMDISK/databases_tmp.crypt" "DISK/databases_encrypt.crypt" "USB2/key"
-
 }

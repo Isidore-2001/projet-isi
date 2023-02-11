@@ -1,28 +1,25 @@
 #! /bin/bash
 
-
 function insertCard {
-    echo "Insert your card"
+    echo "Insert your card number: "
     read card
-    echo "Your card is $card"
-    # get a name of the card
-    echo "Enter a name for your card"
-    read name
-    echo "Your card is $name"
 
-    if [ ! -d RAMDISK ]
-    then
-		echo "RAMDISK not found"
-		exit 1
+    echo "Enter a name for your card: "
+    read name
+
+    if [ ! -d RAMDISK ]; then
+        echo "Error: RAMDISK directory not found."
+        exit 1
     fi
-    if [ ! -f RAMDISK/ramdisk_key ]
-    then
-        echo "RAMDISK_KEY not found"
-		exit 1
+
+    if [ ! -f RAMDISK/master_key ]; then
+        echo "Error: Logging in first is required."
+        exit 1
     fi
-	encryptedPassword=$(echo -n "$card" | openssl enc -aes-256-cbc -base64 -A -pass file:RAMDISK/ramdisk_key -nosalt)
-    echo $name':'$encryptedPassword >> DISK/databases
+
+    encrypted_card=$(echo -n "$card" | openssl enc -aes-256-cbc -base64 -pbkdf2 -pass file:RAMDISK/master_key -nosalt)
+    echo "$name:$encrypted_card" >> DISK/databases
 }
 
-# insertion a card
+# insert a card
 insertCard

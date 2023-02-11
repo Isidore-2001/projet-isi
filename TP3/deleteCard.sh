@@ -8,7 +8,7 @@ function deleteCard {
     # return 2 if the file is not found
     if [ ! -f RAMDISK/master_key ]
     then
-        echo "MasterKey not found"
+        echo "Logging first required"
         return 2
     fi
     card=$(grep $1 DISK/databases)
