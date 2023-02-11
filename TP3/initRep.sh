@@ -16,11 +16,10 @@ function secondLoginJudge() {
 }
 
 function initRepUSB1() {
-    echo "Decrypting USB1 key"
+    echo "****************************** Decrypting USB1 key ******************************"
     decryptUSB1=`loginJudge`
     echo "$decryptUSB1" > USBREPRESENTATION/USB1/key_rep
-    echo "USB1 key decrypted"
-    # add Rep Tag to USBREPRESENTATION/USB1/key_rep
+    echo "****************************** USB1 key encrypted ******************************"
     echo "REP" >> USBREPRESENTATION/USB1/key_rep
 }
 
@@ -28,7 +27,7 @@ function initRepUSB2() {
     echo "Decrypting USB2 key"
     decryptUSB2=`secondLoginJudge`
     echo $decryptUSB2 > USBREPRESENTATION/USB2/key_rep
-    echo "USB2 key decrypted"
+    echo "****************************** USB2 key encrypted ******************************"
     echo "REP" >> USBREPRESENTATION/USB2/key_rep
 }
 
@@ -44,10 +43,12 @@ function initRep {
 }
 
 function purgeRepKey {
+    echo "****************************** Purging keys ******************************"
     rm -rf USBREPRESENTATION/USB1/key_rep
     rm -rf USBREPRESENTATION/USB2/key_rep
     # vider la ram disk 
     rm -rf RAMDISK/*
+    echo "****************************** Keys purged ******************************"
 }
 
 initDirectories

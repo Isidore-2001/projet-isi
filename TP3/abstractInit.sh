@@ -12,7 +12,7 @@ function initDirectories() {
 
 
 function generateKey() {
-	dd if=/dev/urandom bs=1 count=32 count=19 |  hexdump -ve '1/1 "%02x"' > RAMDISK/master_key
+	dd if=/dev/urandom bs=32 count=1 |  hexdump -ve '1/1 "%02x"' > RAMDISK/master_key
 }
 
 function generateMasterKey() {
