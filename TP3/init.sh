@@ -2,11 +2,11 @@
 source abstractInit.sh
 
 function initUSB1() {
-    dd if=/dev/urandom bs=1 count=32 count=19 |  hexdump -ve '1/1 "%02x"' > USB1/key 
+    dd if=/dev/urandom bs=32 count=1 |  hexdump -ve '1/1 "%02x"' > USB1/key 
 }
 
 function initUSB2() {
-    dd if=/dev/urandom bs=1 count=32 count=19 |  hexdump -ve '1/1 "%02x"' > USB2/key 
+    dd if=/dev/urandom bs=32 count=1 |  hexdump -ve '1/1 "%02x"' > USB2/key 
 }
 
 function cryptKey {
@@ -15,6 +15,7 @@ function cryptKey {
 }
 
 function init {
+    rm -rf DISK/*
     initUSB1
     initUSB2
     cryptKey 

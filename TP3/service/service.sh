@@ -4,12 +4,12 @@
 ################################
 #  Include files and variables #
 ################################
-source "login.sh"
-source "insert.sh"
-source "search_card.sh"
-source "deleteCard.sh"
-source "../representant/loginWithRep.sh"
 DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$DIRECTORY/login.sh"
+source "$DIRECTORY/insert.sh"
+source "$DIRECTORY/search_card.sh"
+source "$DIRECTORY/deleteCard.sh"
+source "$DIRECTORY/../representant/loginWithRep.sh"
 MASTER_KEY_FILE="$DIRECTORY/../RAMDISK/master_key"
 
 function checkAuth {

@@ -106,6 +106,7 @@ function login() {
     loginUSB2
     decryptedMasterKey=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../DISK/master_key.crypt -out $DIRECTORY/../RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptUSB2")
     decryptedMasterKeyOut=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../RAMDISK/master_key_tmp.crypt -out $DIRECTORY/../RAMDISK/master_key -pbkdf2 -pass "pass:$decryptUSB1")
+    rm -rf $DIRECTORY/../RAMDISK/master_key_tmp.crypt
 }
 
 

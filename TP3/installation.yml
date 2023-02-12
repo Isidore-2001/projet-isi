@@ -1,0 +1,24 @@
+- name: Install project dependencies
+  hosts: all
+  tasks:
+    - name: Create destination directory
+      become: yes
+      file:
+        path: "/path/to/projet-isi"
+        state: directory
+        mode: 0755
+    - name: Clone project repository
+      become: yes
+      git:
+        repo: "https://glpat-iUvCuzs_1nDsKywCxx77:x-oauth-basic@gitlab.univ-lille.fr/yaoisidore.amevigbe.etu/projet-isi/-/tree/main/TP3"
+        dest: "/path/to/projet-isi"
+
+    - name: Start project service
+      become: yes
+      shell: /bin/bash "/path/to/projet-isi/run.sh"
+      args:
+        executable: /bin/bash
+#
+# vars:
+#   packages:
+#     - zenity
