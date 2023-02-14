@@ -6,19 +6,20 @@ MASTER_KEY_DIR="$DIRECTORY/../RAMDISK"
 DATA_DIR="$DIRECTORY/../DISK/databases"
 
 function searchCard {
-    echo "Enter the name of the card you're looking for: "
-    read search_name
 
-    if [ ! -d $MASTER_KEY_DIR ]; then
+	line=$(cat $MASTER_KEY_FILE | wc -l)
+    if [ ! -d $MASTER_KEY_DIR ] || [ ! $line -eq 0 ]; then
         echo "Error: RAMDISK directory not found."
         exit 1
     fi
-
+	
     if [ ! -f $MASTER_KEY_FILE ]; then
         echo "Error: Logging in first is required."
         exit 1
     fi
 
+    echo "Enter the name of the card you're looking for: "
+    read search_name
     line=$(grep "^$search_name:" $DATA_DIR)
     if [ -n "$line" ]; then
         encrypted_card=$(echo "$line" | cut -d ':' -f2)

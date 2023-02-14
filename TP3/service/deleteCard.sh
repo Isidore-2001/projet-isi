@@ -5,12 +5,17 @@ MASTER_KEY_FILE="$DIRECTORY/../RAMDISK/master_key"
 MASTER_KEY_DIR="$DIRECTORY/../RAMDISK"
 DATA_DIR="$DIRECTORY/../DISK/databases"
 function deleteCard {
-    read -p "Enter a name for the card: " cardName
+	line=$(cat $MASTER_KEY_FILE | wc -l)
+    if [ ! -d $MASTER_KEY_DIR ] || [ ! $line -eq 0 ]; then
+        echo "Error: RAMDISK directory not found."
+        exit 1
+    fi
     if [ ! -f "$MASTER_KEY_FILE" ]
     then
         echo "Logging first required"
         return 2
     fi
+    read -p "Enter a name for the card: " cardName
     card=$(grep $cardName $DATA_DIR)
     if [[ -z $card ]]
     then

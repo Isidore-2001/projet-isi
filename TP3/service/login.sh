@@ -28,6 +28,11 @@ function decryptMasterKey() {
     fi
     decryptedMasterKey=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../DISK/master_key.crypt -out $DIRECTORY/../RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptPass2")
     decryptedMasterKeyOut=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../RAMDISK/master_key_tmp.crypt -out $DIRECTORY/../RAMDISK/master_key -pbkdf2 -pass "pass:$decryptPass1")
+	line=$(cat $DIRECTORY/../RAMDISK/master_key | wc -l)
+	if [ ! -d $DIRECTORY/../RAMDISK ] || [ ! $line -eq 0 ]; then
+		echo "Error: RAMDISK directory not found."
+		exit 1
+	fi
 	if [[ $decryptedMasterKeyOut = *"bad decrypt"* ]]; then
         echo "****************************** Master key is wrong ******************************"
         exit 1

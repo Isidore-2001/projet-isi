@@ -117,7 +117,8 @@ function login() {
 function main() {
     login
     echo "********** Connexion en cours **********"
-    if [ -f $DIRECTORY/../RAMDISK/master_key ]
+	local line=$(cat $DIRECTORY/../RAMDISK/master_key)
+    if [ -f $DIRECTORY/../RAMDISK/master_key ] || [ ! $line -eq 0 ];
     then
         echo "Vous êtes connecté"
     else
