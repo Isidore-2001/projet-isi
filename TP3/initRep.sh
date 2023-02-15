@@ -49,6 +49,7 @@ function cryptKey {
     local password2=$(zenity --password --title="Confirmer le mot de passe pour USB1")
     if [ "$password" = "$password2" ]; then
         echo "****************************** Encrypting key ******************************"
+		echo $password 
         openssl enc -aes-256-cbc -in USBREPRESENTATION/USB1/key_rep -out USBREPRESENTATION/USB1/key.crypt -pbkdf2 -pass "pass:$password"
     else
         zenity --error --text="Les mots de passe ne correspondent pas"
@@ -57,6 +58,7 @@ function cryptKey {
     local password=$(zenity --password --title="Entrer le mot de passe pour le rep USB2" --text="Entrer le mot de passe pour le rep USB2")
     local password2=$(zenity --password --title="Confirmer le mot de passe pour le rep USB2" --text="Confirmer le mot de passe pour le rep USB2")
     if [ "$password" = "$password2" ]; then
+		echo $password 
         echo "****************************** Encrypting key ******************************"
         echo $password | openssl enc -aes-256-cbc -in USBREPRESENTATION/USB2/key_rep -out USBREPRESENTATION/USB2/key.crypt -pbkdf2 -pass "pass:$password"
     else

@@ -12,24 +12,24 @@ function secondLoginJudge() {
 }
 
 function decryptMasterKey() {
-	decryptPass1=$(loginJudge)
+	decryptPass1=`loginJudge`
     if [[ $decryptPass1 = *"bad decrypt"* ]]; then
         echo "****************************** USB1 key is wrong ******************************"
         exit 1
     else
         echo "****************************** USB1 key is correct ******************************"
     fi
-	decryptPass2=$(secondLoginJudge)
+	decryptPass2=`secondLoginJudge`
     if [[ $decryptPass2 = *"bad decrypt"* ]]; then
         echo "****************************** USB2 key is wrong ******************************"
         exit 1
     else
         echo "****************************** USB2 key is correct ******************************"
     fi
-    decryptedMasterKey=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../DISK/master_key.crypt -out $DIRECTORY/../RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptPass2")
-    decryptedMasterKeyOut=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../RAMDISK/master_key_tmp.crypt -out $DIRECTORY/../RAMDISK/master_key -pbkdf2 -pass "pass:$decryptPass1")
-	line=$(cat $DIRECTORY/../RAMDISK/master_key | wc -l)
-	if [ ! -d $DIRECTORY/../RAMDISK ] || [ ! $line -eq 0 ]; then
+    decryptedMasterKey=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../DISK/master_key.crypt -out $DIRECTORY/../RAMDISK/master_key_tmp.crypt -pbkdf2 -pass "pass:$decryptPass1")
+    decryptedMasterKeyOut=$(openssl enc -aes-256-cbc -d -in $DIRECTORY/../RAMDISK/master_key_tmp.crypt -out $DIRECTORY/../RAMDISK/master_key -pbkdf2 -pass "pass:$decryptPass2")
+	line=$(cat $DIRECTORY/../RAMDISK/master_key | wc -w)
+	if [ ! -d $DIRECTORY/../RAMDISK ] || [ $line -eq 0 ]; then
 		echo "Error: RAMDISK directory not found."
 		exit 1
 	fi
@@ -45,3 +45,4 @@ function login() {
 	decryptMasterKey
 }
 
+# login
