@@ -20,7 +20,7 @@ function cryptKey {
 	fi
 	echo "Saississez le mot de passe pour crypter la clé USB2"
 
-	local password2=$(openssl enc -aes-256-cbc -in USB2/key -out USB2/key.crypt -A -pbkdf2)
+	openssl enc -aes-256-cbc -in USB2/key -out USB2/key.crypt -A -pbkdf2
 	if [[ $? -ne 0 ]]; then
 		echo "****************************** USB2 key is wrong ******************************"
 		exit 1

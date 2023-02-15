@@ -5,10 +5,9 @@ MASTER_KEY_FILE="$DIRECTORY/../RAMDISK/master_key"
 MASTER_KEY_DIR="$DIRECTORY/../RAMDISK"
 DATA_DIR="$DIRECTORY/../DISK/databases"
 function insertCard {
-	
 	CONTENT=$(cat $MASTER_KEY_FILE)
-	line=$(echo $CONTENT | wc -l)
-    if [ ! -d $MASTER_KEY_DIR ] || [ ! $line -eq 0 ]; then
+	line=$(cat $MASTER_KEY_FILE | wc -w)
+    if [ ! -d $MASTER_KEY_DIR ] || [ $line -eq 0 ]; then
         echo "Error: RAMDISK directory not found."
         exit 1
     fi
